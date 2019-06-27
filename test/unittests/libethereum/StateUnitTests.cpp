@@ -69,6 +69,21 @@ BOOST_AUTO_TEST_CASE(RollbackSetCode)
     BOOST_CHECK(!s.accountNonemptyAndExisting(addr));
 }
 
+BOOST_AUTO_TEST_CASE(CodeVersionZero)
+{
+    Address addr{"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"};
+    State s{0};
+    s.createContract(addr);
+    uint8_t codeData[] = {'c', 'o', 'd', 'e'};
+    u256 version = 0;
+    s.setCode(addr, {std::begin(codeData), std::end(codeData)}, version);
+    s.commit(State::CommitBehaviour::RemoveEmptyAccounts);
+
+    auto& loadedCode = s.code(addr);
+    BOOST_CHECK(std::equal(std::begin(codeData), std::end(codeData), std::begin(loadedCode)));
+    BOOST_CHECK_EQUAL(s.version(addr), version);
+}
+
 class AddressRangeTestFixture : public TestOutputHelperFixture
 {
 public:
